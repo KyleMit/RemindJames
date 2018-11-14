@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Todo List</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="fonts/fa/css/all.css">
+    <link rel="stylesheet" href="fonts/roboto/css/roboto.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>    
+    
+  </head>
+  <body>
+        <div class="container-fluid text-center bg-light mb-3">
+            
+            <h1>Remind James .com</h1>
+
+            <div class="row justify-content-center text-center">
+                <div class="col-10">
+                    <p class="icons"> 
+                        <i class="fas fa-alarm-clock fa-2x"></i>
+                        <i class="fas fa-plus fa-lg"></i>
+                        <i class="fas fa-comment-alt-lines fa-2x"></i>
+                        <i class="fas fa-plus fa-lg"></i>
+                        <i class="fas fa-grin-squint-tears fa-2x"></i>
+                    </p>
+                    <p>A virtual, crowd-sourced, hourly alarm clock for James.  Text updates live from anywhere in the world, and whatever is in each box on the hour will get sent.</p>
+                    
+                </div>
+            </div>
+        </div>
+
+    <div id="app" class="container">
+        <form>
+
+            <div class="row form-group" v-for="reminder in orderedReminders" >
+                <label class="col-2 text-right col-form-label">{{reminder.hourFormatted}}</label>
+                <div class="col-10">
+                    <input type="text" class="form-control" v-model="reminder.message">
+                </div>
+
+            </div>
+        </form>
+        
+        <div class="row" v-if="error">
+            <div class="alert alert-danger" role="alert">
+                {{error}}
+            </div>
+        </div>
+
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
