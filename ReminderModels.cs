@@ -16,6 +16,10 @@
         // public DateTime CreatedTime { get; set; } = DateTime.Now;
         public string Hour { get; set; }
         public string Message { get; set; }
+
+        public int HourInt => Convert.ToInt32(Hour);
+        public string HourFormatted => (HourInt > 12 ? (HourInt - 12) : HourInt) +
+                                       (HourInt > 11 ? " pm" : " am");
     }
 
     public class ReminderTableEntity : TableEntity

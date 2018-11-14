@@ -28,7 +28,9 @@ namespace RemindJames
             var query = new TableQuery<ReminderTableEntity>();
             var segment = await remindersTable.ExecuteQuerySegmentedAsync(query, null);
 
-            return new OkObjectResult(segment.Select(Mappings.ToModel));
+            var result = segment.Select(Mappings.ToModel).OrderBy(x=>x.HourInt);
+
+            return new OkObjectResult(result);
 
         }
 
