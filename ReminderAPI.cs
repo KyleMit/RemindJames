@@ -21,53 +21,60 @@ namespace RemindJames
 
     public static class ReminderAPI
     {
+
         [FunctionName("GetReminders")]
         public static async Task<IActionResult> GetReminders(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "reminder")] HttpRequest req,
             [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable remindersTable,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
-
             var query = new TableQuery<ReminderTableEntity>();
             var segment = await remindersTable.ExecuteQuerySegmentedAsync(query, null);
 
             var result = segment.Select(Mappings.ToModel)
                         .OrderBy(x=> x.HourSort);
 
+            log.LogInformation($"Get All Reminders returned {result?.Count() ?? 0} record(s)");
+
             return new OkObjectResult(result);
 
         }
 
-        [FunctionName("GetReminderById")]
-        public static IActionResult GetReminderById(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "reminder/{id}")]HttpRequest req,
-            [Table("reminders", Mappings.PartitionKey, "{id}", Connection = "AzureWebJobsStorage")] ReminderTableEntity reminder,
-            TraceWriter log, string id)
-        {
-            log.Info("Getting todo item by id");
 
+
+        [FunctionName("GetReminderByHour")]
+        public static IActionResult GetReminderByHour(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "reminder/{hour}")]HttpRequest req,
+            [Table("reminders", Mappings.PartitionKey, "{hour}", Connection = "AzureWebJobsStorage")] ReminderTableEntity reminder,
+            ILogger log, string hour)
+        {
             if (reminder == null)
             {
-                log.Info($"Reminder for hour {id} not found");
+                log.LogInformation($"Get reminder not found for hour {hour}");
                 return new NotFoundResult();
             }
+
+            log.LogInformation($"Getting reminder found by {hour} with message {reminder.Message}");
+
             return new OkObjectResult(reminder.ToModel());
         }
 
+        
+     
         [FunctionName("CreateReminder")]
         public static async Task<IActionResult> CreateReminder(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "reminder")]HttpRequest req,
             [Table("reminders", Connection = "AzureWebJobsStorage")] IAsyncCollector<ReminderTableEntity> reminderTable,
-            TraceWriter log)
+            ILogger log)
         {
-            log.Info("Creating a new todo list item");
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var input = JsonConvert.DeserializeObject<ReminderModel>(requestBody);
             // need to sanitize?
 
-            
             await reminderTable.AddAsync(input.ToTableEntity());
+
+            log.LogInformation($"Creating Reminder for hour {input.Hour} with message {input.Message}");
+
             return new OkObjectResult(input);
         }
 
@@ -75,7 +82,7 @@ namespace RemindJames
         public static async Task<IActionResult> UpdateReminder(
             [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "reminder/{hour}")]HttpRequest req,
             [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable todoTable,
-            TraceWriter log, string hour)
+            ILogger log, string hour)
         {
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var updatedReminder = JsonConvert.DeserializeObject<ReminderModel>(requestBody);
@@ -95,6 +102,8 @@ namespace RemindJames
             var replaceOperation = TableOperation.Replace(existingReminder);
             await todoTable.ExecuteAsync(replaceOperation);
 
+            log.LogInformation($"Updating reminder hour {updatedReminder.Hour} with message {updatedReminder.Message}");
+
             return new OkObjectResult(existingReminder.ToModel());
         }
 
@@ -103,7 +112,7 @@ namespace RemindJames
         public static async Task<IActionResult> Up(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "reset")]HttpRequest req,
             [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable remindersTable,
-            TraceWriter log)
+            ILogger log)
         {
             // batch operations - https://stackoverflow.com/a/53293614/1366033
             var query = new TableQuery<ReminderTableEntity>();
@@ -119,8 +128,6 @@ namespace RemindJames
             
             // Execute the batch operation.
             await remindersTable.ExecuteBatchAsync(batchDeleteOperation);
-
-            
 
             // Create the batch operation.
             TableBatchOperation batchInsertOperation = new TableBatchOperation();
@@ -151,6 +158,8 @@ namespace RemindJames
             // Execute the batch operation.
             await remindersTable.ExecuteBatchAsync(batchInsertOperation);
 
+            log.LogInformation($"Resetting entire table and adding {defaultRecords?.Count() ?? 0} record(s)");
+
             return new OkResult();
         }
     }
@@ -164,7 +173,7 @@ namespace RemindJames
             [TimerTrigger("0 0 * * * *")]TimerInfo myTimer,
             [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable reminderTable,
             [TwilioSms(AccountSidSetting = "TwilioAccountSid",AuthTokenSetting = "TwilioAuthToken", From = "+16177670668")] IAsyncCollector<CreateMessageOptions> messages,
-             ILogger log)
+            ILogger log)
         {
                         
             string hour = DateTime.Now.AddMinutes(5).Hour.ToString();
@@ -178,15 +187,17 @@ namespace RemindJames
 
             
             var existingRow = (ReminderTableEntity)findResult.Result;
+            var message = existingRow.Message;
 
             var reminderPhone = Environment.GetEnvironmentVariable("ReminderNumber");
-            var message = new CreateMessageOptions(new PhoneNumber(reminderPhone))
+            var smsMessage = new CreateMessageOptions(new PhoneNumber(reminderPhone))
             {
-                Body = existingRow.Message
+                Body = message
             };
             
-            await messages.AddAsync(message);
+            await messages.AddAsync(smsMessage);
             
+             log.LogInformation($"Sending reminder for hour {hour} with message {message}");
         }
 
         [FunctionName("InvokeMessage")]
@@ -196,14 +207,11 @@ namespace RemindJames
             [TwilioSms(AccountSidSetting = "TwilioAccountSid",AuthTokenSetting = "TwilioAuthToken", From = "+16177670668")] IAsyncCollector<CreateMessageOptions> messages,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
 
+            string message = req.Query["message"];
+            string hour = req.Query["hour"];
 
-            string msg = req.Query["message"];
-
-            if (msg == null) {
-
-                string hour = req.Query["hour"];
+            if (message == null) {
 
                 if (hour == null) {
                     hour = DateTime.Now.AddMinutes(5).Hour.ToString();
@@ -218,19 +226,20 @@ namespace RemindJames
 
                 var existingRow = (ReminderTableEntity)findResult.Result;
 
-                msg = existingRow.Message;
+                message = existingRow.Message;
             }
            
 
             var reminderPhone = Environment.GetEnvironmentVariable("ReminderNumber");
-            var message = new CreateMessageOptions(new PhoneNumber(reminderPhone))
+            var smsMessage = new CreateMessageOptions(new PhoneNumber(reminderPhone))
             {
-                Body = msg
+                Body = message
             };
             
             
-            await messages.AddAsync(message);
-            
+            await messages.AddAsync(smsMessage);
+
+            log.LogInformation($"Invoking reminder for hour {hour} with message {message}");
 
         }
               
