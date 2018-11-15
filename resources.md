@@ -52,6 +52,7 @@ Pretty much most of any day is just spent Googling how to do things.  Here's a c
 ## .NET
 
 * [The current .NET SDK does not support targeting .NET Core 2.1. target .NET Core 2.0](https://stackoverflow.com/q/49171623/1366033)
+* [Get Time for specific timezone](https://stackoverflow.com/a/441145/1366033)
 
 ## Visual Studio Code
 

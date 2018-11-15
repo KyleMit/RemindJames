@@ -1,4 +1,5 @@
-    using Microsoft.WindowsAzure.Storage.Table;
+using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage.Table;
     using System;
     using System.Globalization;
     
@@ -32,6 +33,31 @@
 
     }
 
+    public static class Utilities {
+        
+        public static DateTime GetEasternDateTime(ILogger log) {
+            DateTime timeUtc = DateTime.UtcNow;
+            DateTime estTime = DateTime.Now;
+
+            try
+            {
+                TimeZoneInfo estZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+                estTime = TimeZoneInfo.ConvertTimeFromUtc(timeUtc, estZone);
+                log.LogInformation($"The date and time are {estTime} {(estZone.IsDaylightSavingTime(estTime) ? estZone.DaylightName : estZone.StandardName)}.");
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                log.LogInformation($"The registry does not define the Central Standard Time zone.");
+            }                           
+            catch (InvalidTimeZoneException)
+            {
+                log.LogInformation($"Registry data on the Central STandard Time zone has been corrupted.");
+            }
+
+            return estTime;
+        }
+
+    }
 
 
 

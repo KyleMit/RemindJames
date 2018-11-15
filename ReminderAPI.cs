@@ -41,6 +41,29 @@ namespace RemindJames
         }
 
 
+        [FunctionName("GetReminderCurrent")]
+        public static async Task<IActionResult> GetReminderCurrent(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "remindercurrent")]HttpRequest req,
+            [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable reminderTable,
+            ILogger log)
+        {
+            string hour = Utilities.GetEasternDateTime(log).AddMinutes(5).Hour.ToString();
+
+            var findOperation = TableOperation.Retrieve<ReminderTableEntity>(Mappings.PartitionKey, hour);
+            var findResult = await reminderTable.ExecuteAsync(findOperation);
+
+            if (findResult.Result == null)
+            {
+                log.LogInformation($"Get reminder not found for hour {hour}");
+                return new NotFoundResult();
+            }
+
+            var existingRow = (ReminderTableEntity)findResult.Result;
+            
+            log.LogInformation($"Getting current reminder found for hour {hour} with message {existingRow.Message}");
+
+            return new OkObjectResult(existingRow.ToModel());
+        }
 
         [FunctionName("GetReminderByHour")]
         public static IActionResult GetReminderByHour(
@@ -176,7 +199,7 @@ namespace RemindJames
             ILogger log)
         {
                         
-            string hour = DateTime.Now.AddMinutes(5).Hour.ToString();
+            string hour = Utilities.GetEasternDateTime(log).AddMinutes(5).Hour.ToString();
 
             var findOperation = TableOperation.Retrieve<ReminderTableEntity>(Mappings.PartitionKey, hour);
             var findResult = await reminderTable.ExecuteAsync(findOperation);
@@ -214,7 +237,7 @@ namespace RemindJames
             if (message == null) {
 
                 if (hour == null) {
-                    hour = DateTime.Now.AddMinutes(5).Hour.ToString();
+                    hour = Utilities.GetEasternDateTime(log).AddMinutes(5).Hour.ToString();
                 }
 
                 var findOperation = TableOperation.Retrieve<ReminderTableEntity>(Mappings.PartitionKey, hour);
