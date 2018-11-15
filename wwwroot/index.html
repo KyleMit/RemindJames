@@ -2,23 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Language" content="en">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" href="favicon.ico">
 
-    <title>Remind James</title>
+    <!-- Standard Metadata -->
+    <title>Remind James .com</title>
+    <meta name="description" content="A virtual, crowd-sourced, hourly, text-based alarm clock for James" />
+    <meta name="author" content="Kyle Mitofsky">
+
+    
+    <!-- Open Graph data -->
+    <meta property="og:title" content="Remind James .com" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="http://www.remindjames.com/index.html" />
+    <meta property="og:image" content="http://www.remindjames.com/content/preview.png" />
+    <meta property="og:description" content="A virtual, crowd-sourced, hourly, text-based alarm clock for James" />
+    <meta property="og:site_name" content="Remind James .com" />
+
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css">
-    <link rel="stylesheet" href="style.css?v=1">
     <link rel="stylesheet" href="fonts/fa/css/all.css">
     <link rel="stylesheet" href="fonts/roboto/css/roboto.css">
+    <link rel="stylesheet" href="style.css?v=2">
 
+    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.5/popper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.17/vue.js"></script>    
     
   </head>
-  <body>
-        <div class="container-fluid text-center bg-light mb-3">
+  <body >
+      <div id="app">
+
+
+        <div class="container-fluid text-center bg-light border-bottom">
             
             <h1>Remind James <span class="text-muted" >.com</span></h1>
 
@@ -31,34 +52,54 @@
                         <i class="fas fa-plus fa-xl"></i>
                         <i class="fas fa-grin-squint-tears fa-2x"></i>
                     </p>
-                    <p>A virtual, crowd-sourced, hourly, text-based alarm clock for James. </p>
+                    <p>A virtual, crowd-sourced, hourly, text-based alarm clock for James </p>
                     
                 </div>
             </div>
         </div>
 
-    <div id="app" class="container">
-        <form>
 
-            <div class="row form-group" v-for="reminder in orderedReminders" >
-                <label class="col-3 col-sm-2 text-right col-form-label">{{reminder.hourFormatted}}</label>
-                <div class="col-9 col-sm-10">
-                    <input type="text" 
-                    class="form-control text-ellipsis" 
-                    v-model="reminder.message"
-                     @change="updateReminder(reminder)">
-                </div>
-
-            </div>
-        </form>
-        
-        <div class="row" v-if="error">
-            <div class="alert alert-danger" role="alert">
-                {{error}}
+        <div class="container-fluid text-center border-bottom sticky-top mb-3">
+            <div class="row text-center p-2 bg-light sticky-top" >
+                <h5 class="col mb-0">
+                        <b>Next Up</b>:
+                        <span class="text-muted" >Sending</span>
+                        '<span class="text-primary" >{{nextReminder.message}}</span>'
+                        <span class="text-muted" >@</span>
+                        <span class="text-primary">{{nextReminder.hourFormatted}}</span> 
+                </h5>
             </div>
         </div>
 
+        <div class="container">
+            <form>
+
+                <div class="row form-group" v-for="reminder in orderedReminders"
+                        v-bind:class="isNext(reminder)" >
+    
+                    <label class="col-3 col-sm-2 col-lg-1 text-right col-form-label">
+                        {{reminder.hourFormatted}}
+                    </label>
+                    <div class="col-9 col-sm-10 col-lg-11">
+                        <input type="text" 
+                                class="form-control text-ellipsis" 
+                                v-model="reminder.message"
+                                @focus="getReminders()"
+                                @change="updateReminder(reminder)">
+                    </div>
+    
+                </div>
+            </form>
+            
+            <div class="row" v-if="error">
+                <div class="alert alert-danger" role="alert">
+                    {{error}}
+                </div>
+            </div>
+        </div>
     </div>
-    <script src="script.js?v=1"></script>
+
+
+    <script src="script.js?v=2"></script>
 </body>
 </html>

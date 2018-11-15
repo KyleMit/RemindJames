@@ -10,8 +10,9 @@ body {
 }
 .next {
     font-weight: bold;
-    background: green;
+    background: #087308;
     color: white;
+    border-radius: 3px;
 }
 
 .timeline {
@@ -23,4 +24,7 @@ body {
 
 .text-ellipsis {
     text-overflow: ellipsis;
+}
+.border-bottom {
+    border-bottom: 1px solid #adadad;
 }
