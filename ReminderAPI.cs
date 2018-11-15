@@ -32,7 +32,8 @@ namespace RemindJames
             var query = new TableQuery<ReminderTableEntity>();
             var segment = await remindersTable.ExecuteQuerySegmentedAsync(query, null);
 
-            var result = segment.Select(Mappings.ToModel).OrderBy(x=>x.HourInt);
+            var result = segment.Select(Mappings.ToModel)
+                        .OrderBy(x=> x.HourSort);
 
             return new OkObjectResult(result);
 
@@ -160,7 +161,7 @@ namespace RemindJames
      
         [FunctionName("SendReminder")]
         public static async Task SendReminder(
-            [TimerTrigger("0 * * * * *")]TimerInfo myTimer,
+            [TimerTrigger("0 0 * * * *")]TimerInfo myTimer,
             [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable reminderTable,
             [TwilioSms(AccountSidSetting = "TwilioAccountSid",AuthTokenSetting = "TwilioAuthToken", From = "+16177670668")] IAsyncCollector<CreateMessageOptions> messages,
              ILogger log)

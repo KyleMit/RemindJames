@@ -1,5 +1,6 @@
     using Microsoft.WindowsAzure.Storage.Table;
     using System;
+    using System.Globalization;
     
     public class ReminderModel
     {
@@ -18,8 +19,9 @@
         public string Message { get; set; }
 
         public int HourInt => Convert.ToInt32(Hour);
-        public string HourFormatted => (HourInt > 12 ? (HourInt - 12) : HourInt) +
-                                       (HourInt > 11 ? " pm" : " am");
+        public int HourSort => HourInt + (HourInt < 6 ? 24 : 0);
+        public string HourFormatted => DateTime.ParseExact($"{Hour}:00", "H:mm", CultureInfo.InvariantCulture).ToString("h tt");
+
     }
 
     public class ReminderTableEntity : TableEntity

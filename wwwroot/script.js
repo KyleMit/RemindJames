@@ -1,33 +1,36 @@
-const baseAddress = 'https://remindjames.azurewebsites.net'; //'https://remindjames.azurewebsites.net/api/reminder'; //'http://localhost:7071';
+const baseAddress = window.location.hostname == "localhost" ? 
+            "http://localhost:7071" : 
+            "https://remindjames.azurewebsites.net";
 
 var app = new Vue({
     el: '#app',
     data: {
-        reminders: [
-            // {hour: '8 am', message: 'Wake Up!'},
-            // {hour: '9 am', message: 'Wake up Now!'}
-        ],
+        reminders: [ ],
         error: undefined
     },
     computed: {
         // https://stackoverflow.com/a/40512856/1366033
         orderedReminders: function () {
-            return _.orderBy(this.reminders, 'hourInt');
+            return _.orderBy(this.reminders, 'hourSort');
         }
     },
     methods: {
-        updateTodo: function(todo) {
-            const body = JSON.stringify({ isCompleted: todo.isCompleted });
-            fetch(`${baseAddress}/api/todo/${todo.id}`, 
-                { method: "PUT", body: body,
-                credentials: "same-origin"})
+        updateReminder: function(reminder) {
+            const body = JSON.stringify({ message: reminder.message });
+
+            fetch(`${baseAddress}/api/reminder/${reminder.hour}`, 
+                { method: "PUT", body: body })
+                .then(response => this.getReminders())
                 .catch(reason => this.error = `Failed to update item: ${reason}`);
         },     
-    },
-    mounted: function () {
-        fetch(`${baseAddress}/api/reminder`, {})
+        getReminders: function() {
+            fetch(`${baseAddress}/api/reminder`, {})
             .then(response => response.json())
             .then(json => this.reminders = json)
             .catch(reason => this.error = `Failed to fetch reminders: ${reason}`);
+        }
+    },
+    mounted: function () {
+        this.getReminders();
     },
 });
