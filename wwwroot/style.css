@@ -4,3 +4,19 @@ body {
 .icons > i {
     vertical-align: middle;
 }
+.form-group {
+    padding: 4px;
+    margin-bottom: 0;
+}
+.next {
+    font-weight: bold;
+    background: green;
+    color: white;
+}
+
+.timeline {
+    background: #ffb76b; /* Old browsers */
+    background: -webkit-linear-gradient(top,       #ffa73d 55%,#62c45c 55%); /* Chrome10-25,Safari5.1-6 */
+    background:    -moz-linear-gradient(top,       #ffa73d 55%,#62c45c 55%); /* FF3.6-15 */
+    background:         linear-gradient(to bottom, #ffa73d 60%,#62c45c 60%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+}
