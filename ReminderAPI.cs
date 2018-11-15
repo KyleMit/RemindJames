@@ -18,75 +18,6 @@ using Twilio.Types;
 namespace RemindJames
 {
 
-    public static class ReminderFuncs {
-
-     
-        [FunctionName("SendReminder")]
-        public static async Task SendReminder(
-            [TimerTrigger("0 * * * * *")]TimerInfo myTimer,
-            [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable reminderTable,
-            [TwilioSms(AccountSidSetting = "TwilioAccountSid",AuthTokenSetting = "TwilioAuthToken", From = "+16177670668")] IAsyncCollector<CreateMessageOptions> messages,
-             ILogger log)
-        {
-                        
-            string hour = DateTime.Now.AddMinutes(5).Hour.ToString();
-
-            var findOperation = TableOperation.Retrieve<ReminderTableEntity>(Mappings.PartitionKey, hour);
-            var findResult = await reminderTable.ExecuteAsync(findOperation);
-            if (findResult.Result == null)
-            {
-                return;
-            }
-
-            
-            var existingRow = (ReminderTableEntity)findResult.Result;
-
-            var reminderPhone = Environment.GetEnvironmentVariable("ReminderNumber");
-            var message = new CreateMessageOptions(new PhoneNumber(reminderPhone))
-            {
-                Body = existingRow.Message
-            };
-            
-            await messages.AddAsync(message);
-            
-        }
-
-        [FunctionName("InvokeMessage")]
-        public static async Task InvokeMessage(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "InvokeMessage")] HttpRequest req,
-            [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable reminderTable,
-            [TwilioSms(AccountSidSetting = "TwilioAccountSid",AuthTokenSetting = "TwilioAuthToken", From = "+16177670668")] IAsyncCollector<CreateMessageOptions> messages,
-            ILogger log)
-        {
-            log.LogInformation("C# HTTP trigger function processed a request.");
-
-            string hour = req.Query["hour"];
-            if (hour == null) {
-                hour = DateTime.Now.AddMinutes(5).Hour.ToString();
-            }
-
-            var findOperation = TableOperation.Retrieve<ReminderTableEntity>(Mappings.PartitionKey, hour);
-            var findResult = await reminderTable.ExecuteAsync(findOperation);
-            if (findResult.Result == null)
-            {
-                return;
-            }
-
-            var existingRow = (ReminderTableEntity)findResult.Result;
-
-            var reminderPhone = Environment.GetEnvironmentVariable("ReminderNumber");
-            var message = new CreateMessageOptions(new PhoneNumber(reminderPhone))
-            {
-                Body = existingRow.Message
-            };
-            
-            
-            await messages.AddAsync(message);
-            
-
-        }
-              
-    }
 
     public static class ReminderAPI
     {
@@ -107,8 +38,8 @@ namespace RemindJames
 
         }
 
-        [FunctionName("GetReminder")]
-        public static IActionResult GetReminder(
+        [FunctionName("GetReminderById")]
+        public static IActionResult GetReminderById(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "reminder/{id}")]HttpRequest req,
             [Table("reminders", Mappings.PartitionKey, "{id}", Connection = "AzureWebJobsStorage")] ReminderTableEntity reminder,
             TraceWriter log, string id)
@@ -137,6 +68,33 @@ namespace RemindJames
             
             await reminderTable.AddAsync(input.ToTableEntity());
             return new OkObjectResult(input);
+        }
+
+        [FunctionName("UpdateReminder")]
+        public static async Task<IActionResult> UpdateReminder(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "reminder/{hour}")]HttpRequest req,
+            [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable todoTable,
+            TraceWriter log, string hour)
+        {
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            var updatedReminder = JsonConvert.DeserializeObject<ReminderModel>(requestBody);
+
+            // get element by id
+            var findOperation = TableOperation.Retrieve<ReminderTableEntity>(Mappings.PartitionKey, hour);
+            var findResult = await todoTable.ExecuteAsync(findOperation);
+            
+            // check if not found
+            if (findResult.Result == null) { return new NotFoundResult();  }
+
+            // update existing reminder
+            var existingReminder = (ReminderTableEntity)findResult.Result;
+            existingReminder.Message = updatedReminder.Message;
+            
+            // replace in table
+            var replaceOperation = TableOperation.Replace(existingReminder);
+            await todoTable.ExecuteAsync(replaceOperation);
+
+            return new OkObjectResult(existingReminder.ToModel());
         }
 
 
@@ -194,5 +152,86 @@ namespace RemindJames
 
             return new OkResult();
         }
+    }
+
+    
+    public static class ReminderFuncs {
+
+     
+        [FunctionName("SendReminder")]
+        public static async Task SendReminder(
+            [TimerTrigger("0 * * * * *")]TimerInfo myTimer,
+            [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable reminderTable,
+            [TwilioSms(AccountSidSetting = "TwilioAccountSid",AuthTokenSetting = "TwilioAuthToken", From = "+16177670668")] IAsyncCollector<CreateMessageOptions> messages,
+             ILogger log)
+        {
+                        
+            string hour = DateTime.Now.AddMinutes(5).Hour.ToString();
+
+            var findOperation = TableOperation.Retrieve<ReminderTableEntity>(Mappings.PartitionKey, hour);
+            var findResult = await reminderTable.ExecuteAsync(findOperation);
+            if (findResult.Result == null)
+            {
+                return;
+            }
+
+            
+            var existingRow = (ReminderTableEntity)findResult.Result;
+
+            var reminderPhone = Environment.GetEnvironmentVariable("ReminderNumber");
+            var message = new CreateMessageOptions(new PhoneNumber(reminderPhone))
+            {
+                Body = existingRow.Message
+            };
+            
+            await messages.AddAsync(message);
+            
+        }
+
+        [FunctionName("InvokeMessage")]
+        public static async Task InvokeMessage(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "InvokeMessage")] HttpRequest req,
+            [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable reminderTable,
+            [TwilioSms(AccountSidSetting = "TwilioAccountSid",AuthTokenSetting = "TwilioAuthToken", From = "+16177670668")] IAsyncCollector<CreateMessageOptions> messages,
+            ILogger log)
+        {
+            log.LogInformation("C# HTTP trigger function processed a request.");
+
+
+            string msg = req.Query["message"];
+
+            if (msg == null) {
+
+                string hour = req.Query["hour"];
+
+                if (hour == null) {
+                    hour = DateTime.Now.AddMinutes(5).Hour.ToString();
+                }
+
+                var findOperation = TableOperation.Retrieve<ReminderTableEntity>(Mappings.PartitionKey, hour);
+                var findResult = await reminderTable.ExecuteAsync(findOperation);
+                if (findResult.Result == null)
+                {
+                    return;
+                }
+
+                var existingRow = (ReminderTableEntity)findResult.Result;
+
+                msg = existingRow.Message;
+            }
+           
+
+            var reminderPhone = Environment.GetEnvironmentVariable("ReminderNumber");
+            var message = new CreateMessageOptions(new PhoneNumber(reminderPhone))
+            {
+                Body = msg
+            };
+            
+            
+            await messages.AddAsync(message);
+            
+
+        }
+              
     }
 }
