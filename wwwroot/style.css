@@ -28,3 +28,15 @@ body {
 .border-bottom {
     border-bottom: 1px solid #adadad;
 }
+
+
+.has-feedback-left .form-control {
+    padding-left: 32px;
+}
+
+.form-control-feedback {
+    position: absolute;
+    padding: 11px 9px;
+    pointer-events: none;
+    color: #414141;
+}

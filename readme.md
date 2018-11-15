@@ -159,6 +159,8 @@ python -m SimpleHTTPServer 8080
 * [Event Handling `v-on` directive](https://vuejs.org/v2/api/#v-on)
 * [Class & Style Binding](https://vuejs.org/v2/guide/class-and-style.html)
 * [Conditional Class](https://stackoverflow.com/a/43210564/1366033)
+* [Add LocalStorage](https://travishorn.com/add-localstorage-to-your-vue-app-in-2-lines-of-code-56eb2c9f371b)
+* [Offline States](https://github.com/filrak/vue-offline)
 
 ### LoDash
 
@@ -175,3 +177,5 @@ python -m SimpleHTTPServer 8080
 * [What is class=“mb-0” in Bootstrap 4?](https://stackoverflow.com/q/41574776/1366033)
 * [Spacing Utilities](https://getbootstrap.com/docs/4.1/utilities/spacing/)
 * [Sticky Top](https://getbootstrap.com/docs/4.0/utilities/position/#sticky-top)
+* [Feedback Icons BS 3](https://stackoverflow.com/a/18839305/1366033)
+* [Form Validation](https://getbootstrap.com/docs/4.0/components/forms/#validation)

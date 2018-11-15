@@ -23,10 +23,19 @@ var app = new Vue({
             var next = _.find(ordered, function(r) { return r.hourInt > +curHour; });
 
             // restart loop if we couldn't find, else return empty if we're not yet mounted
-            next = next ||  ordered[0] || {message: "", hourFormatted: ""}
+            next = next ||  ordered[0];
 
             return next;
         }
+    },
+    watch: {
+        reminders: {
+            handler: function() {
+            console.log('Reminders changed!');
+            localStorage.setItem('reminders', JSON.stringify(this.reminders));
+            },
+            deep: true,
+        },
     },
     methods: {
         updateReminder: function(reminder) {
@@ -51,6 +60,11 @@ var app = new Vue({
         setInterval(() => this.now = moment(), 1000 * 10)
     },
     mounted: function () {
+        console.log('App mounted!');
+        // fetch from local storage
+        if (localStorage.getItem('reminders')) this.reminders = JSON.parse(localStorage.getItem('reminders'));
+
+        // update from live stream
         this.getReminders();
     },
 });
