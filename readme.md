@@ -20,7 +20,7 @@ Azure Functions + Azure Table Storage + Azure Blob Storage + Azure CDN + Twilio 
 
 1. Add a `local.settings.json` file (contains keys so removed by `.gitignore`)
 
-    ```json
+    ```js
     {
         "IsEncrypted": false,
         "Values": {
