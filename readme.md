@@ -24,9 +24,10 @@ Azure Functions + Azure Table Storage + Twilio API + SPA to send hourly, crowd-s
     {
         "IsEncrypted": false,
         "Values": {
-            // key can be  found in Azure > Function Apps > Application Settings
-            "AzureWebJobsStorage": "DefaultEndpointsProtocol=https; AccountName=remindjames; AccountKey=C5oYKn/wbj6CJh3/i8zyYnng0rfeyqQoFUY0h7DWZrLniW36cZ +sgcS5lwtxafh7RgLh8fPa+Mfl3+bQH7N45g===true", 
-            "AzureWebJobsDashboard": "UseDevelopmentStorage=true",
+            "AzureWebJobsStorage": "", // Azure > Function Apps > Application Settings
+            "TwilioAccountSid": "",    //https://www.twilio.com/console
+            "TwilioAuthToken": "",     //https://www.twilio.com/console
+            "TwilioPhoneNumber": "",   //https://www.twilio.com/console/phone-numbers/incoming
             "FUNCTIONS_WORKER_RUNTIME": "dotnet"
         },
         "Host": {
@@ -54,6 +55,7 @@ npm install -g azure-functions-core-tools@core
 
 ```bash
 dotnet add package Microsoft.Azure.WebJobs.Extensions.Storage
+dotnet add package Microsoft.Azure.WebJobs.Extensions.Twilio
 ```
 
 ## Running Locally
@@ -82,10 +84,14 @@ func start
 * [Deploy to Azure using Azure Functions](https://code.visualstudio.com/tutorials/functions-extension/getting-started)
 * [Microsoft Azure Developer: Create Serverless Functions by Mark Heath](https://app.pluralsight.com/library/courses/microsoft-azure-serverless-functions-create/table-of-contents)
 * [CORS](https://stackoverflow.com/q/43767255/1366033)
+* [Timing Trigger](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer#trigger---c-example)
+* [Twilio Binding](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-twilio#2x-c-example)
 * [The current .NET SDK does not support targeting .NET Core 2.1. target .NET Core 2.0](https://stackoverflow.com/q/49171623/1366033)
 * [No job functions found. Try making your job classes and methods public](https://stackoverflow.com/q/44643347/1366033)
 * [No valid combination of account information found](https://stackoverflow.com/q/13913589/1366033)
 * [Where do I get the AzureWebJobsDashboard connection string information?](https://stackoverflow.com/q/27580264/1366033)
+* [Reading settings from a Azure Function](https://stackoverflow.com/q/43556311/1366033)
+* [Chron Trigger Syntax](https://crontab.guru/#0_*_*_*_*)
 
 ### Azure Portal
 
@@ -108,6 +114,11 @@ func start
 * [Create an Azure CDN](https://docs.microsoft.com/en-us/azure/cdn/cdn-create-new-endpoint)
 * [Host your domain in Azure DNS](https://docs.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns)
 * [Configure HTTPS on an Azure CDN custom domain](https://docs.microsoft.com/en-us/azure/cdn/cdn-custom-ssl?tabs=option-1-default-enable-https-with-a-cdn-managed-certificate)
+
+### Twilio
+
+* [How to Send Daily SMS Reminders Using C#, Azure Functions and Twilio](https://www.twilio.com/blog/2017/01/how-to-send-daily-sms-reminders-using-c-azure-functions-and-twilio.html)
+* [Can I remove the text “Sent from the Twilio Sandbox Number” In twilio SMS](https://stackoverflow.com/q/27853675/1366033)
 
 ### .NET
 

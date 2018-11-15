@@ -12,9 +12,82 @@ using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.WindowsAzure.Storage;
 using System.Collections.Generic;
 using System.Linq;
+using Twilio.Rest.Api.V2010.Account;
+using Twilio.Types;
 
 namespace RemindJames
 {
+
+    public static class ReminderFuncs {
+
+     
+        [FunctionName("SendReminder")]
+        public static async Task SendReminder(
+            [TimerTrigger("0 * * * * *")]TimerInfo myTimer,
+            [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable reminderTable,
+            [TwilioSms(AccountSidSetting = "TwilioAccountSid",AuthTokenSetting = "TwilioAuthToken", From = "+16177670668")] IAsyncCollector<CreateMessageOptions> messages,
+             ILogger log)
+        {
+                        
+            string hour = DateTime.Now.AddMinutes(5).Hour.ToString();
+
+            var findOperation = TableOperation.Retrieve<ReminderTableEntity>(Mappings.PartitionKey, hour);
+            var findResult = await reminderTable.ExecuteAsync(findOperation);
+            if (findResult.Result == null)
+            {
+                return;
+            }
+
+            
+            var existingRow = (ReminderTableEntity)findResult.Result;
+
+            var reminderPhone = Environment.GetEnvironmentVariable("ReminderNumber");
+            var message = new CreateMessageOptions(new PhoneNumber(reminderPhone))
+            {
+                Body = existingRow.Message
+            };
+            
+            await messages.AddAsync(message);
+            
+        }
+
+        [FunctionName("InvokeMessage")]
+        public static async Task InvokeMessage(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "InvokeMessage")] HttpRequest req,
+            [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable reminderTable,
+            [TwilioSms(AccountSidSetting = "TwilioAccountSid",AuthTokenSetting = "TwilioAuthToken", From = "+16177670668")] IAsyncCollector<CreateMessageOptions> messages,
+            ILogger log)
+        {
+            log.LogInformation("C# HTTP trigger function processed a request.");
+
+            string hour = req.Query["hour"];
+            if (hour == null) {
+                hour = DateTime.Now.AddMinutes(5).Hour.ToString();
+            }
+
+            var findOperation = TableOperation.Retrieve<ReminderTableEntity>(Mappings.PartitionKey, hour);
+            var findResult = await reminderTable.ExecuteAsync(findOperation);
+            if (findResult.Result == null)
+            {
+                return;
+            }
+
+            var existingRow = (ReminderTableEntity)findResult.Result;
+
+            var reminderPhone = Environment.GetEnvironmentVariable("ReminderNumber");
+            var message = new CreateMessageOptions(new PhoneNumber(reminderPhone))
+            {
+                Body = existingRow.Message
+            };
+            
+            
+            await messages.AddAsync(message);
+            
+
+        }
+              
+    }
+
     public static class ReminderAPI
     {
         [FunctionName("GetReminders")]
