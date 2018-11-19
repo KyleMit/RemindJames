@@ -104,15 +104,15 @@ namespace RemindJames
         [FunctionName("UpdateReminder")]
         public static async Task<IActionResult> UpdateReminder(
             [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "reminder/{hour}")]HttpRequest req,
-            [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable todoTable,
+            [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable reminderTable,
             ILogger log, string hour)
         {
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var updatedReminder = JsonConvert.DeserializeObject<ReminderModel>(requestBody);
 
-            // get element by id
+            // get row by id
             var findOperation = TableOperation.Retrieve<ReminderTableEntity>(Mappings.PartitionKey, hour);
-            var findResult = await todoTable.ExecuteAsync(findOperation);
+            var findResult = await reminderTable.ExecuteAsync(findOperation);
             
             // check if not found
             if (findResult.Result == null) { return new NotFoundResult();  }
@@ -123,7 +123,7 @@ namespace RemindJames
             
             // replace in table
             var replaceOperation = TableOperation.Replace(existingReminder);
-            await todoTable.ExecuteAsync(replaceOperation);
+            await reminderTable.ExecuteAsync(replaceOperation);
 
             log.LogInformation($"Updating reminder hour {updatedReminder.Hour} with message {updatedReminder.Message}");
 
@@ -198,20 +198,30 @@ namespace RemindJames
             [TwilioSms(AccountSidSetting = "TwilioAccountSid",AuthTokenSetting = "TwilioAuthToken", From = "+16177670668")] IAsyncCollector<CreateMessageOptions> messages,
             ILogger log)
         {
-                        
+            // get id (hour)
             string hour = Utilities.GetEasternDateTime(log).AddMinutes(5).Hour.ToString();
 
+            // get row by id
             var findOperation = TableOperation.Retrieve<ReminderTableEntity>(Mappings.PartitionKey, hour);
             var findResult = await reminderTable.ExecuteAsync(findOperation);
-            if (findResult.Result == null)
-            {
-                return;
-            }
 
-            
+            // check if not found
+            if (findResult.Result == null) { return; }
+
+            // grab current text
             var existingRow = (ReminderTableEntity)findResult.Result;
             var message = existingRow.Message;
 
+            // clear current reminder text
+            var existingReminder = (ReminderTableEntity)findResult.Result;
+            existingReminder.Message = "";
+            
+            // update existing reminder
+            var replaceOperation = TableOperation.Replace(existingReminder);
+            await reminderTable.ExecuteAsync(replaceOperation);
+
+           
+            // create sms message
             var reminderPhone = Environment.GetEnvironmentVariable("ReminderNumber");
             var smsMessage = new CreateMessageOptions(new PhoneNumber(reminderPhone))
             {
@@ -220,7 +230,7 @@ namespace RemindJames
             
             await messages.AddAsync(smsMessage);
             
-             log.LogInformation($"Sending reminder for hour {hour} with message {message}");
+            log.LogInformation($"Sending reminder for hour {hour} with message {message}");
         }
 
         [FunctionName("InvokeMessage")]
