@@ -8,7 +8,8 @@ var app = new Vue({
     data: {
         reminders: [ ],
         error: undefined,
-        now: moment()
+        now: moment(),
+        updating: false
     },
     computed: {
         // https://stackoverflow.com/a/40512856/1366033
@@ -20,7 +21,7 @@ var app = new Vue({
             var curHour = moment().format("HH")
             var ordered = _.orderBy(this.reminders, 'hourSort');
 
-            var next = _.find(ordered, function(r) { return r.hourInt > +curHour; });
+            var next = _.find(ordered, function(r) { return r.hourInt > +curHour & r.message != ""; });
 
             // restart loop if we couldn't find, else return empty if we're not yet mounted
             next = next ||  ordered[0];
@@ -40,9 +41,10 @@ var app = new Vue({
     methods: {
         updateReminder: function(reminder) {
             const body = JSON.stringify({ message: reminder.message });
-
+            this.updating = true;
             fetch(`${baseAddress}/api/reminder/${reminder.hour}`, 
                 { method: "PUT", body: body })
+                .then(response => this.updating = false)
                 .then(response => this.getReminders())
                 .catch(reason => this.error = `Failed to update item: ${reason}`);
         },     
@@ -50,6 +52,7 @@ var app = new Vue({
             return reminder.hour == this.nextReminder.hour ? "next" : "";
         },
         getReminders: function() {
+            if (this.updating) return;
             fetch(`${baseAddress}/api/reminder`, {})
             .then(response => response.json())
             .then(json => this.reminders = json)
