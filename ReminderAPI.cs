@@ -7,6 +7,7 @@ using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Newtonsoft.Json;
 using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.WindowsAzure.Storage;
@@ -101,10 +102,13 @@ namespace RemindJames
             return new OkObjectResult(input);
         }
 
+ 
+
         [FunctionName("UpdateReminder")]
         public static async Task<IActionResult> UpdateReminder(
             [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "reminder/{hour}")]HttpRequest req,
             [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable reminderTable,
+            [SignalR(HubName = "ReminderHub")] IAsyncCollector<SignalRMessage> signalRMessages,
             ILogger log, string hour)
         {
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
@@ -127,7 +131,16 @@ namespace RemindJames
 
             log.LogInformation($"Updating reminder hour {updatedReminder.Hour} with message {updatedReminder.Message}");
 
-            return new OkObjectResult(existingReminder.ToModel());
+            var returnReminder = existingReminder.ToModel();
+
+            await signalRMessages.AddAsync(
+                            new SignalRMessage
+                            {
+                                Target = "updateReminder",
+                                Arguments = new[] { returnReminder }
+                            });
+
+            return new OkObjectResult(returnReminder);
         }
 
 
@@ -275,6 +288,23 @@ namespace RemindJames
             log.LogInformation($"Invoking reminder for hour {hour} with message {message}");
 
         }
-              
+
+
+        
+   
+
+    }
+
+
+    public static class SignalRFuncs {
+
+        [FunctionName("Negotiate")]
+        public static SignalRConnectionInfo GetSignalRInfo(
+            [HttpTrigger(AuthorizationLevel.Anonymous, Route = "negotiate")] HttpRequest req,
+            [SignalRConnectionInfo(HubName = "ReminderHub")] SignalRConnectionInfo connectionInfo)
+        {
+            return connectionInfo;
+        }
+
     }
 }

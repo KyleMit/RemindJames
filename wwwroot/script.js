@@ -9,7 +9,6 @@ var app = new Vue({
         reminders: [ ],
         error: undefined,
         now: moment(),
-        updating: false
     },
     computed: {
         // https://stackoverflow.com/a/40512856/1366033
@@ -41,18 +40,14 @@ var app = new Vue({
     methods: {
         updateReminder: function(reminder) {
             const body = JSON.stringify({ message: reminder.message });
-            this.updating = true;
             fetch(`${baseAddress}/api/reminder/${reminder.hour}`, 
                 { method: "PUT", body: body })
-                .then(response => this.updating = false)
-                .then(response => this.getReminders())
                 .catch(reason => this.error = `Failed to update item: ${reason}`);
         },     
         isNext(reminder) {
             return reminder.hour == this.nextReminder.hour ? "next" : "";
         },
         getReminders: function() {
-            if (this.updating) return;
             fetch(`${baseAddress}/api/reminder`, {})
             .then(response => response.json())
             .then(json => this.reminders = json)
@@ -70,4 +65,50 @@ var app = new Vue({
         // update from live stream
         this.getReminders();
     },
+
 });
+
+
+getConnectionInfo().then(info => {
+    // make compatible with old and new SignalRConnectionInfo
+    info.accessToken = info.accessToken || info.accessKey;
+    info.url = info.url || info.endpoint;
+
+    const options = {
+      accessTokenFactory: () => info.accessToken
+    };
+
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl(info.url, options)
+      .configureLogging(signalR.LogLevel.Information)
+      .build();
+
+    connection.on('updateReminder', updateReminder);
+
+    connection.onclose(() => console.log('disconnected'));
+
+    console.log('connecting...');
+
+    connection.start()
+      .then(() => console.log('connected!'))
+      .catch(console.error);
+
+  }).catch(console.error);
+
+function getConnectionInfo() {
+    return axios.post(`${baseAddress}/api/negotiate`, null, getAxiosConfig())
+      .then(resp => resp.data);
+}
+
+function getAxiosConfig() {
+    const config = {
+        headers: {}
+    };
+    return config;
+}
+
+function updateReminder(updatedReminder) {
+    var existingReminder = _.find(app.reminders, function(r) { return r.hourInt == updatedReminder.HourInt; });
+    existingReminder.message = updatedReminder.Message;
+    console.log("Socket responded with updated reminder", updatedReminder)
+  }

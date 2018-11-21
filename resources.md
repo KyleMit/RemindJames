@@ -26,6 +26,11 @@ Pretty much most of any day is just spent Googling how to do things.  Here's a c
 * [Configuring a custom domain name for an Azure cloud service](https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-custom-domain-name-portal)
 * [Best way to host a Single Page Application (SPA) in Microsoft Azure](https://medium.com/medialesson/best-way-to-host-a-single-page-application-spa-in-microsoft-azure-3e70cbd075c3)
 
+## Azure SignalR
+
+* [Build Real-time Apps with Azure Functions and Azure SignalR Service](https://docs.microsoft.com/en-us/azure/azure-signalr/signalr-overview-azure-functions)
+* [Azure Functions and SignalR Service using C#](https://docs.microsoft.com/en-us/azure/azure-signalr/signalr-quickstart-azure-functions-csharp)
+
 ## Azure Storage
 
 * [Storage Pricing](https://azure.microsoft.com/en-us/pricing/details/storage/blobs/)
