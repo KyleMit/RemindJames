@@ -49,6 +49,12 @@ Pretty much most of any day is just spent Googling how to do things.  Here's a c
 * [Control Azure CDN caching behavior with caching rules](https://docs.microsoft.com/en-us/azure/cdn/cdn-caching-rules)
 * [Purge Cached Assets](https://docs.microsoft.com/en-us/azure/cdn/cdn-purge-endpoint)
 
+## Function Proxies
+
+* [Function Proxies](https://docs.microsoft.com/en-us/azure/azure-functions/functions-proxies)
+* [Using Azure Functions v2 proxies to avoid CORS issues](https://markheath.net/post/azure-functions-v2-proxies)
+
+
 ## Twilio
 
 * [How to Send Daily SMS Reminders Using C#, Azure Functions and Twilio](https://www.twilio.com/blog/2017/01/how-to-send-daily-sms-reminders-using-c-azure-functions-and-twilio.html)
@@ -58,6 +64,7 @@ Pretty much most of any day is just spent Googling how to do things.  Here's a c
 
 * [The current .NET SDK does not support targeting .NET Core 2.1. target .NET Core 2.0](https://stackoverflow.com/q/49171623/1366033)
 * [Get Time for specific timezone](https://stackoverflow.com/a/441145/1366033)
+* [https://stackoverflow.com/q/50083611/1366033](How to copy files to output directory depending on build configurations)
 
 ## Visual Studio Code
 

@@ -1,7 +1,7 @@
-// const baseAddress = window.location.hostname == "localhost" ? 
-//             "http://localhost:7071" : 
-//             "https://remindjames.azurewebsites.net";
-const baseAddress = "https://remindjames.azurewebsites.net";
+const baseAddress = window.location.hostname == "localhost" ? 
+            "http://localhost:7071" : 
+            "https://remindjames.azurewebsites.net";
+//const baseAddress = "https://remindjames.azurewebsites.net";
 
 var app = new Vue({
     el: '#app',

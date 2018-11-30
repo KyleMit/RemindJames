@@ -133,6 +133,7 @@ namespace RemindJames
 
             var returnReminder = existingReminder.ToModel();
 
+            // send client update
             await signalRMessages.AddAsync(
                             new SignalRMessage
                             {
@@ -209,6 +210,7 @@ namespace RemindJames
             [TimerTrigger("0 0 * * * *")]TimerInfo myTimer,
             [Table("reminders", Connection = "AzureWebJobsStorage")] CloudTable reminderTable,
             [TwilioSms(AccountSidSetting = "TwilioAccountSid",AuthTokenSetting = "TwilioAuthToken", From = "+16177670668")] IAsyncCollector<CreateMessageOptions> messages,
+            [SignalR(HubName = "ReminderHub")] IAsyncCollector<SignalRMessage> signalRMessages,
             ILogger log)
         {
             // get id (hour)
@@ -225,25 +227,37 @@ namespace RemindJames
             var existingRow = (ReminderTableEntity)findResult.Result;
             var message = existingRow.Message;
 
-            // clear current reminder text
-            var existingReminder = (ReminderTableEntity)findResult.Result;
-            existingReminder.Message = "";
-            
-            // update existing reminder
-            var replaceOperation = TableOperation.Replace(existingReminder);
-            await reminderTable.ExecuteAsync(replaceOperation);
+            // if we got something, let's do some updates
+            if (!string.IsNullOrEmpty(message)) {
+                // clear current reminder text
+                var existingReminder = (ReminderTableEntity)findResult.Result;
+                existingReminder.Message = "";
+                
+                // update existing reminder
+                var replaceOperation = TableOperation.Replace(existingReminder);
+                await reminderTable.ExecuteAsync(replaceOperation);
+                
+                // create sms message
+                var reminderPhone = Environment.GetEnvironmentVariable("ReminderNumber");
+                var smsMessage = new CreateMessageOptions(new PhoneNumber(reminderPhone))
+                {
+                    Body = message
+                };
+                
+                await messages.AddAsync(smsMessage);
+                
+                log.LogInformation($"Sending reminder for hour {hour} with message {message}");
 
-           
-            // create sms message
-            var reminderPhone = Environment.GetEnvironmentVariable("ReminderNumber");
-            var smsMessage = new CreateMessageOptions(new PhoneNumber(reminderPhone))
-            {
-                Body = message
-            };
+                // send client update
+                var returnReminder = existingReminder.ToModel();
+                var signalRMessage = new SignalRMessage
+                    {
+                        Target = "updateReminder",
+                        Arguments = new[] { returnReminder }
+                    };
+                await signalRMessages.AddAsync(signalRMessage);
+            }
             
-            await messages.AddAsync(smsMessage);
-            
-            log.LogInformation($"Sending reminder for hour {hour} with message {message}");
         }
 
         [FunctionName("InvokeMessage")]
@@ -275,17 +289,17 @@ namespace RemindJames
                 message = existingRow.Message;
             }
            
+            if (!string.IsNullOrEmpty(message)) {
+                var reminderPhone = Environment.GetEnvironmentVariable("ReminderNumber");
+                var smsMessage = new CreateMessageOptions(new PhoneNumber(reminderPhone))
+                {
+                    Body = message
+                };
+                   
+                await messages.AddAsync(smsMessage);
 
-            var reminderPhone = Environment.GetEnvironmentVariable("ReminderNumber");
-            var smsMessage = new CreateMessageOptions(new PhoneNumber(reminderPhone))
-            {
-                Body = message
-            };
-            
-            
-            await messages.AddAsync(smsMessage);
-
-            log.LogInformation($"Invoking reminder for hour {hour} with message {message}");
+                log.LogInformation($"Invoking reminder for hour {hour} with message {message}");
+            }
 
         }
 
