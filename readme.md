@@ -89,7 +89,8 @@ func start
 
 ```bash
 cd wwwroot
-python -m SimpleHTTPServer 8002
+#python -m SimpleHTTPServer 8002
+live-server --host=localhost --port=8002
 ```
 
 ## Publishing
