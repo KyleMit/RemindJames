@@ -62,6 +62,7 @@ Pretty much most of any day is just spent Googling how to do things.  Here's a c
 ## Visual Studio Code
 
 * [Change keyboard shortcut bindings in Visual Studio Code?](https://stackoverflow.com/a/33791170/1366033)
+* [VS Code - Mouse Wheel Zoom](https://stackoverflow.com/q/30192884/1366033)
 
 ## Table Storage
 
