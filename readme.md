@@ -1,6 +1,6 @@
 # Remind James
 
-Azure Functions + Azure Table Storage + Azure Blob Storage + Azure CDN + Twilio API + Vue SPA to send hourly, crowd-sourced, text-based reminders, updated simultaneously by everyone in the world, to one person imparticular in need of reminding.
+Azure Functions + Azure Table Storage + Azure Blob Storage + Azure CDN + Twilio API + Vue SPA to send hourly, crowd-sourced, text-based reminders, updated simultaneously by everyone in the world, to one person in particular in need of reminding.
 
 ## Resources
 
