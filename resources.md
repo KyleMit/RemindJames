@@ -1,6 +1,6 @@
 # Resources, Guides, and Troubleshooting
 
-Pretty much most of any day is just spent Googling how to do things.  Here's a collection of resources that were used to build this site, both from original documentation and also everywhere I've stubbed my programttic toe in looking for an answer.
+Pretty much most of any day is just spent Googling how to do things.  Here's a collection of resources that were used to build this site, both from original documentation and also everywhere I've stubbed my programmatic toe in looking for an answer.
 
 ## Azure Functions
 

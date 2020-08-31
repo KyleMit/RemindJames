@@ -15,8 +15,8 @@ View the [resources.md](https://github.com/KyleMit/RemindJames/blob/master/resou
 
 * [**Azure Storage Explorer**](https://azure.microsoft.com/en-us/features/storage-explorer/)
 * [**Postman**](https://www.getpostman.com/)
-* [**Visual Studio Code**](https://code.visualstudio.com/)  
- `.vscode/extensions.json` will reccomend two extensions:  
+* [**Visual Studio Code**](https://code.visualstudio.com/)
+ `.vscode/extensions.json` will reccomend two extensions:
   * [ms-azuretools.vscode-azurefunctions](https://github.com/Microsoft/vscode-azurefunctions)
   * [ms-vscode.csharp](https://github.com/OmniSharp/omnisharp-vscode)
 * [**Vue Dev Tools**](https://github.com/vuejs/vue-devtools)
@@ -44,7 +44,7 @@ View the [resources.md](https://github.com/KyleMit/RemindJames/blob/master/resou
 
 ### SDK Dependencies
 
-[Downlad and install the SDK for .NET Core 2.1.0+](https://www.microsoft.com/net/download/dotnet-core/2.1)
+[Download and install the SDK for .NET Core 2.1.0+](https://www.microsoft.com/net/download/dotnet-core/2.1)
 
 ### CLI Dependencies
 
@@ -97,10 +97,10 @@ live-server --host=localhost --port=8002
 
 ### Azure Functions
 
-1. [Deploy to Azure using Azure Functions](https://code.visualstudio.com/tutorials/functions-extension/getting-started)  
+1. [Deploy to Azure using Azure Functions](https://code.visualstudio.com/tutorials/functions-extension/getting-started)
 
      ![Azure Extension - Publish](https://i.imgur.com/JmBcCMa.png)
-2. Copy any params from `local.settings.json` to Functions > Settings  
+2. Copy any params from `local.settings.json` to Functions > Settings
 
     ![Azure Functions - App Settings](https://i.imgur.com/UVHASIj.png)
 
